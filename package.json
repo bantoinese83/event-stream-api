@@ -49,6 +49,7 @@
     "@fastify/cors": "^8.3.0",
     "@fastify/jwt": "^7.2.4",
     "@fastify/sensible": "^6.0.3",
+    "@google/genai": "^1.2.0",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/exporter-prometheus": "^0.45.0",
     "@opentelemetry/sdk-node": "^0.45.0",

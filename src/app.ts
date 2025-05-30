@@ -9,6 +9,7 @@ import config from './config';
 import { container } from './container';
 import { logger } from './utils/logger';
 import promClient from 'prom-client';
+import apiRoutes from './routes/api';
 
 export async function createApp() {
   const _container = container;
@@ -43,6 +44,8 @@ export async function createApp() {
     options: { prefix: '/' },
     forceESM: false,
   });
+
+  app.register(apiRoutes, { prefix: '/api' });
 
   // Prometheus metrics endpoint
   app.get('/metrics', async (_request, reply) => {
