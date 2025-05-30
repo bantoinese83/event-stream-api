@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  roles         Role[]    @relation("UserRoles")
+  apiKeys       ApiKey[]
+  active        Boolean   @default(true)
+  lastLoginAt   DateTime?
+  resetToken    String?   @unique
+  resetTokenExpiresAt DateTime?
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([email])
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  permissions Permission[] @relation("RolePermissions")
+  users       User[]       @relation("UserRoles")
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+
+  @@index([name])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  roles       Role[]   @relation("RolePermissions")
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([name])
+}
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  name        String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([key])
+  @@index([userId])
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  timestamp   DateTime
+  eventType   String
+  source      String
+  userId      String?
+  sessionId   String?
+  status      String   @default("success")
+  severity    String   @default("info")
+  duration    Int?
+  data        Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([timestamp])
+  @@index([eventType])
+  @@index([source])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([severity])
+  @@index([timestamp, eventType, source])
+  @@index([userId, sessionId, timestamp])
+}
+
+model Webhook {
+  id          String   @id @default(uuid())
+  name        String
+  url         String
+  secret      String
+  events      String[] // Array of event types to trigger on
+  headers     Json?    // Custom headers
+  enabled     Boolean  @default(true)
+  retryCount  Int      @default(3)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([events])
+  @@index([enabled])
+}
+
+model WebhookDelivery {
+  id          String   @id @default(uuid())
+  webhookId   String
+  eventId     String
+  status      String   // success, failed, pending
+  response    Json?    // Response from the webhook endpoint
+  error       String?  // Error message if failed
+  retryCount  Int      @default(0)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model RateLimit {
+  id        String   @id @default(uuid())
+  key       String
+  endpoint  String
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([key, endpoint], name: "key_endpoint")
+  @@index([resetAt])
+} 

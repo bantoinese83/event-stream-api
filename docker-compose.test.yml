@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=test
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/event_stream_test
+      - LOG_LEVEL=error
+      - JWT_SECRET=your_test_jwt_secret_min_32_chars_long_here
+      - JWT_EXPIRES_IN=1h
+      - CORS_ORIGIN=*
+      - RATE_LIMIT_WINDOW_MS=1000
+      - RATE_LIMIT_MAX=100
+      - ENABLE_SWAGGER=false
+      - ENABLE_REQUEST_LOGGING=false
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    command: npm run test
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - '5433:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=event_stream_test
+    tmpfs:
+      - /var/lib/postgresql/data

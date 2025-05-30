@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build output
+dist/
+build/
+coverage/
+
+# Environment variables
+.env
+.env.*
+
+# Prisma
+prisma/migrations/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+.DS_Store
+*.log 

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/eventdb
+      - NODE_ENV=development
+    depends_on:
+      - db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  db:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=eventdb
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./prisma/timescale-init.sql:/docker-entrypoint-initdb.d/timescale-init.sql
+
+volumes:
+  timescaledb_data:

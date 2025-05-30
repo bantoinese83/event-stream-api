@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/event_stream_dev
+      - LOG_LEVEL=debug
+      - JWT_SECRET=your_dev_jwt_secret_min_32_chars_long_here
+      - JWT_EXPIRES_IN=7d
+      - CORS_ORIGIN=http://localhost:3000
+      - RATE_LIMIT_WINDOW_MS=60000
+      - RATE_LIMIT_MAX=1000
+      - ENABLE_SWAGGER=true
+      - ENABLE_REQUEST_LOGGING=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    command: npm run start:dev
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=event_stream_dev
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_dev_data:

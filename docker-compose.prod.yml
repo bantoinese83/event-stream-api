@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/event_stream_prod
+      - LOG_LEVEL=info
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=1d
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - RATE_LIMIT_WINDOW_MS=60000
+      - RATE_LIMIT_MAX=100
+      - ENABLE_SWAGGER=false
+      - ENABLE_REQUEST_LOGGING=true
+    depends_on:
+      - db
+    restart: unless-stopped
+    command: npm run start:prod
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=event_stream_prod
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_prod_data:
